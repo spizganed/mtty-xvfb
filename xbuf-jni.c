@@ -1,5 +1,5 @@
 /*
- * The app half of vfb-android.c (MIT): a JNI library for the MeowTTY app. XBuffer.send(HardwareBuffer, fd) sends the
+ * The app half of vfb-android.c (MIT): a JNI library for the mtty app. XBuffer.send(HardwareBuffer, fd) sends the
  * buffer through a connected unix socket (AHardwareBuffer_sendHandleToUnixSocket). Java has no call for that.
  */
 #include <android/hardware_buffer.h>
@@ -25,7 +25,7 @@ JNI_OnLoad(JavaVM *vm, void *reserved)
     (void) reserved;
     if ((*vm)->GetEnv(vm, (void **) &env, JNI_VERSION_1_6) != JNI_OK)
         return JNI_ERR;
-    cls = (*env)->FindClass(env, "com/spizganed/meowtty/XBuffer");
+    cls = (*env)->FindClass(env, "com/spizganed/mtty/XBuffer");
     if (!cls || (*env)->RegisterNatives(env, cls, methods, 1) != 0)
         return JNI_ERR;
     return JNI_VERSION_1_6;

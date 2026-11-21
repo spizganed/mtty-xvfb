@@ -3,11 +3,11 @@
 xorg-server tree. Argument: the prefix that holds the xtrans source (include/X11/Xtrans).
 
 - The app is no root, and Android allows no hard link in the data folder of an app: -nolock works for any user.
-- MEOWTTY_XKBCOMP: the command that compiles the keymap, for example "sh /path/xkbcomp.sh". Without it: xkbcomp from
+- MTTY_XKBCOMP: the command that compiles the keymap, for example "sh /path/xkbcomp.sh". Without it: xkbcomp from
   the built-in folder.
-- MEOWTTY_XKM_DIR: the folder for the compiled keymap. It must be absolute: xkbcomp -R changes the working folder.
+- MTTY_XKM_DIR: the folder for the compiled keymap. It must be absolute: xkbcomp -R changes the working folder.
 - Popen and System call setuid and setgid only when the ids differ: Android kills an app for them (seccomp).
-- MEOWTTY_XBUF: the abstract socket of the app. The screen is then the AHardwareBuffer that the app sends there
+- MTTY_XBUF: the abstract socket of the app. The screen is then the AHardwareBuffer that the app sends there
   (vfb-android.c); the app shows it with no copy.
 - GLX with direct rendering only (vfb-glx.c in place of the swrast provider): the clients render with their own Mesa.
 - MIT-SHM with fds only: the server makes its segments with memfd_create, and a SysV attach fails with BadAccess
@@ -27,21 +27,21 @@ def patch(path, old, new, count=1):
 
 patch("os/utils.c",
       '            if (getuid() != 0)\n                ErrorF\n                    ("Warning: the -nolock option can only be used by root\\n");\n            else\n',
-      '            /* MeowTTY: an Android app is no root, and has no hard links. */\n')
+      '            /* mtty: an Android app is no root, and has no hard links. */\n')
 patch("os/utils.c", '#define LOCK_DIR "/tmp"', '#define LOCK_DIR "tmp"')
 
 patch("xkb/ddxLoad.c",
       "    if (r < 0 || r >= size) {\n        assert(strlen(\"/tmp/\") < size);",
-      "    /* MeowTTY: an absolute folder from the app. */\n"
-      "    if (getenv(\"MEOWTTY_XKM_DIR\"))\n"
-      "        r = snprintf(outdir, size, \"%s/\", getenv(\"MEOWTTY_XKM_DIR\"));\n"
+      "    /* mtty: an absolute folder from the app. */\n"
+      "    if (getenv(\"MTTY_XKM_DIR\"))\n"
+      "        r = snprintf(outdir, size, \"%s/\", getenv(\"MTTY_XKM_DIR\"));\n"
       "    if (r < 0 || r >= size) {\n        assert(strlen(\"/tmp/\") < size);")
 patch("xkb/ddxLoad.c",
       '    if (asprintf(&buf,\n                 "\\"%s%sxkbcomp\\" -w %d %s -xkm \\"%s\\" "',
-      '    /* MeowTTY: the app gives the whole command, for example a script that runs xkbcomp in the Linux system. */\n'
+      '    /* mtty: the app gives the whole command, for example a script that runs xkbcomp in the Linux system. */\n'
       '    char *xkbcompcmd = NULL;\n'
-      '    if (getenv("MEOWTTY_XKBCOMP"))\n'
-      '        xkbcompcmd = strdup(getenv("MEOWTTY_XKBCOMP"));\n'
+      '    if (getenv("MTTY_XKBCOMP"))\n'
+      '        xkbcompcmd = strdup(getenv("MTTY_XKBCOMP"));\n'
       '    else if (asprintf(&xkbcompcmd, "\\"%s%sxkbcomp\\"", xkbbindir, xkbbindirsep) == -1)\n'
       '        xkbcompcmd = NULL;\n'
       '    if (!xkbcompcmd || asprintf(&buf,\n                 "%s -w %d %s -xkm \\"%s\\" "')
@@ -60,7 +60,7 @@ if "getegid() != getgid() &&" not in s:
     s = s.replace("if (setuid(getuid()) == -1)", "if (geteuid() != getuid() && setuid(getuid()) == -1)")
     open("os/utils.c", "w").write(s)
 
-# The screen in the AHardwareBuffer of the app (vfb-android.c), when MEOWTTY_XBUF names its socket. The usual memory
+# The screen in the AHardwareBuffer of the app (vfb-android.c), when MTTY_XBUF names its socket. The usual memory
 # still holds the XWD header and the colour map; malloc does not touch the screen part of it.
 import os, shutil
 here = os.path.dirname(os.path.abspath(__file__))
@@ -72,11 +72,11 @@ patch("hw/vfb/InitOutput.c", '#include "vfb-dri3.h"\n#endif\n', '#include "vfb-d
 patch("hw/vfb/InitOutput.c",
       "    pbits = vfbAllocateFramebufferMemory(pvfb);\n    if (!pbits)\n        return FALSE;\n",
       "    {\n"
-      "        /* MeowTTY: the screen in the buffer of the app. */\n"
+      "        /* mtty: the screen in the buffer of the app. */\n"
       "        int stride = 0;\n"
-      "        char *shared = getenv(\"MEOWTTY_XBUF\") ? vfbAndroidBuffer(pvfb->width, pvfb->height, &stride) : NULL;\n"
-      "        if (getenv(\"MEOWTTY_XBUF\") && !shared)\n"
-      "            FatalError(\"vfb: no buffer from the app (MEOWTTY_XBUF)\\n\");\n"
+      "        char *shared = getenv(\"MTTY_XBUF\") ? vfbAndroidBuffer(pvfb->width, pvfb->height, &stride) : NULL;\n"
+      "        if (getenv(\"MTTY_XBUF\") && !shared)\n"
+      "            FatalError(\"vfb: no buffer from the app (MTTY_XBUF)\\n\");\n"
       "        if (shared) {\n"
       "            pvfb->paddedBytesWidth = stride;\n"
       "            pvfb->paddedWidth = stride / (pvfb->bitsPerPixel / 8);\n"
@@ -98,7 +98,7 @@ patch("glx/glxext.c", "static __GLXprovider *__glXProviderStack = &__glXDRISWRas
 patch("Xext/shm.c",
       "        shmdesc->addr = shmat(stuff->shmid, 0,",
       "#ifdef __ANDROID__\n"
-      "        /* MeowTTY: Android kills an app for shmat. The client must send an fd (ShmAttachFd). */\n"
+      "        /* mtty: Android kills an app for shmat. The client must send an fd (ShmAttachFd). */\n"
       "        free(shmdesc);\n"
       "        return BadAccess;\n"
       "#endif\n"

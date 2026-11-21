@@ -1,7 +1,7 @@
 #!/bin/sh
-# Builds Xvfb with our DRI3 for Android (arm64, bionic, API 28): an X server that the MeowTTY app runs natively,
+# Builds Xvfb with our DRI3 for Android (arm64, bionic, API 28): an X server that the mtty app runs natively,
 # outside proot. All libraries are built from their release tarballs and linked in statically.
-# Output: $OUT (default $W/Xvfb-meowtty-android-arm64).
+# Output: $OUT (default $W/Xvfb-mtty-android-arm64).
 #
 # Compiler: the clang of the NDK on an x86_64 host (NDK, or ANDROID_NDK_LATEST_HOME on GitHub runners).
 # On an arm64 host (the Linux system of the phone) the NDK compiler does not run: then the system clang builds with the
@@ -15,7 +15,7 @@ NDK=${NDK:-${ANDROID_NDK_LATEST_HOME:-}}
 [ -n "$NDK" ] || { echo "Set NDK to the folder of the Android NDK."; exit 1; }
 T=$NDK/toolchains/llvm/prebuilt/linux-x86_64
 P=$W/prefix
-OUT=${OUT:-$W/Xvfb-meowtty-android-arm64}
+OUT=${OUT:-$W/Xvfb-mtty-android-arm64}
 mkdir -p "$W/src" "$W/bin" "$P/lib/pkgconfig"
 cd "$W"
 
@@ -142,7 +142,7 @@ printf 'dridriverdir=/nonexistent\nName: dri\nDescription: no DRI drivers\nVersi
 fetch xorg-server $X/xserver/xorg-server-21.1.22.tar.xz 1a242c8917c49ba29ccc1f6021613d8a2b9805dd0d271a66ae9d09f4b0bb06b3
 python3 "$HERE/patch-dri3.py"
 python3 "$HERE/patch-android.py" "$P"
-# The paths below are the ones in the Linux system; the app gives the real ones (-xkbdir, -fp, MEOWTTY_XKBCOMP).
+# The paths below are the ones in the Linux system; the app gives the real ones (-xkbdir, -fp, MTTY_XKBCOMP).
 meson setup build --cross-file "$W/cross.txt" --prefix="$P" --buildtype=release \
   -Dxorg=false -Dxephyr=false -Dxnest=false -Dxwin=false -Dxquartz=false -Dxvfb=true \
   -Dglx=true -Dglamor=false -Ddri1=false -Ddri2=false -Ddri3=true -Dudev=false -Dudev_kms=false -Dsystemd_logind=false \
@@ -162,7 +162,7 @@ mkdir -p "$(dirname "$OUT")"
 "$STRIP" -o "$OUT" build/hw/vfb/Xvfb
 echo "Built $OUT"
 # The JNI library of the app that sends the screen buffer to the server (xbuf-jni.c).
-JNI=${JNI_OUT:-$(dirname "$OUT")/libmeowtty-xbuf-android-arm64.so}
+JNI=${JNI_OUT:-$(dirname "$OUT")/libmtty-xbuf-android-arm64.so}
 "$CC" -shared -fPIC -O2 -o "$JNI" "$HERE/xbuf-jni.c" -landroid -lnativewindow
 "$STRIP" "$JNI"
 echo "Built $JNI"

@@ -1,7 +1,7 @@
 /*
  * The screen of Xvfb in an AHardwareBuffer of the Android app (MIT, like the X server).
  *
- * The app makes the buffer and listens on the abstract unix socket that MEOWTTY_XBUF names. At the screen setup the
+ * The app makes the buffer and listens on the abstract unix socket that MTTY_XBUF names. At the screen setup the
  * server connects, takes the buffer (AHardwareBuffer_recvHandleFromUnixSocket), locks it for the CPU and uses its memory
  * as the screen. The app shows the same buffer with no copy. The socket stays open: the app sees when the server ends.
  */
@@ -20,7 +20,7 @@
 void *
 vfbAndroidBuffer(int width, int height, int *stride_bytes)
 {
-    const char *name = getenv("MEOWTTY_XBUF");
+    const char *name = getenv("MTTY_XBUF");
     struct sockaddr_un addr;
     socklen_t len;
     AHardwareBuffer *buffer = NULL;

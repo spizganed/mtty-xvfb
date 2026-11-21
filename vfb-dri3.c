@@ -1,5 +1,5 @@
 /*
- * A small DRI3 for Xvfb, for MeowTTY. Licence: MIT (X11), the same as the X server.
+ * A small DRI3 for Xvfb, for mtty. Licence: MIT (X11), the same as the X server.
  *
  * The Mesa build for Adreno (lfdevs/mesa-for-android-container) needs DRI3 in the X server. It sends each frame as one
  * linear buffer fd (PixmapFromBuffers). This file maps that fd and makes the memory the pixmap, so Present copies the

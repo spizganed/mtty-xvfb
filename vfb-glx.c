@@ -1,5 +1,5 @@
 /*
- * GLX for the native Xvfb of MeowTTY, with direct rendering only (MIT, like the X server).
+ * GLX for the native Xvfb of mtty, with direct rendering only (MIT, like the X server).
  *
  * The clients render with their own Mesa (through DRI3 or the software path). The server only keeps the GLX records:
  * the fbconfigs and visuals, the contexts and the drawables. It has no GL of its own, so indirect contexts fail.
@@ -181,6 +181,6 @@ vfbGlxScreenProbe(ScreenPtr pScreen)
 
 __GLXprovider __glXMeowProvider = {
     vfbGlxScreenProbe,
-    "MeowTTY",
+    "mtty",
     NULL
 };
